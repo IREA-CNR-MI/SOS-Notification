@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
 var mqtt_service_1 = require("../mqtt-service");
+var axios_1 = require("axios");
 var SOSFeed = /** @class */ (function () {
     function SOSFeed(baseTopic) {
         if (baseTopic === void 0) { baseTopic = 'backup/casa-fabio/'; }
@@ -22,11 +23,25 @@ var SOSFeed = /** @class */ (function () {
                 switch (shortTopic) {
                     case 'temperature':
                         temp = _this.resultTemplates.temperature;
-                        temp.value = '' + payload.timestamp + ',' + payload.value + '#';
+                        temp.resultValues = '' + payload.timestamp + ',' + payload.value + '#';
+                        axios_1.default.post(_this.sosUrl, temp)
+                            .then(function (res) {
+                            console.log('insert results', res.data);
+                        })
+                            .catch(function (err) {
+                            console.log('insert error', err);
+                        });
                         break;
                     case 'humidity':
                         temp = _this.resultTemplates.humidity;
-                        temp.value = '' + payload.timestamp + ',' + payload.value + '#';
+                        temp.resultValues = '' + payload.timestamp + ',' + payload.value + '#';
+                        axios_1.default.post(_this.sosUrl, temp)
+                            .then(function (res) {
+                            console.log('insert results', res.data);
+                        })
+                            .catch(function (err) {
+                            console.log('insert error', err);
+                        });
                         break;
                 }
                 console.log('inserting', temp);

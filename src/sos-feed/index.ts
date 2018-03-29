@@ -1,5 +1,6 @@
 import {readFileSync} from 'fs';
 import {MqttService} from '../mqtt-service';
+import Axios from 'axios';
 
 export class SOSFeed {
 	sosUrl = 'http://sos:8080/observations/service';
@@ -23,11 +24,26 @@ export class SOSFeed {
 				switch (shortTopic) {
 					case 'temperature':
 						temp = this.resultTemplates.temperature;
-						temp.value = '' + payload.timestamp + ',' + payload.value + '#';
+						temp.resultValues = '' + payload.timestamp + ',' + payload.value + '#';
+
+						Axios.post(this.sosUrl, temp)
+							.then( res => {
+								console.log('insert results', res.data);
+							})
+							.catch( err => {
+								console.log('insert error', err);
+							})
 						break;
 					case 'humidity':
 						temp = this.resultTemplates.humidity;
-						temp.value = '' + payload.timestamp + ',' + payload.value + '#';
+						temp.resultValues = '' + payload.timestamp + ',' + payload.value + '#';
+						Axios.post(this.sosUrl, temp)
+							.then( res => {
+								console.log('insert results', res.data);
+							})
+							.catch( err => {
+								console.log('insert error', err);
+							})
 						break;
 				}
 

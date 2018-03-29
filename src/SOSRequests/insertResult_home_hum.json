@@ -2,6 +2,6 @@
   "request": "InsertResult",
   "service": "SOS",
   "version": "2.0.0",
-  "templateIdentifier": "http://www.get-it.it/sensors/mqtt.get-it.it/procedure/noManufacturerDeclared/noModelDeclared/noSerialNumberDeclared/20180328052658273_28432/template/observedProperty/air_humidity/foi/SSF/SP/4326/45.153318/9.488844",
+  "templateIdentifier": "http://www.get-it.it/sensors/mqtt.get-it.it/procedure/noManufacturerDeclared/noModelDeclared/noSerialNumberDeclared/20180328052658273_28432/template/observedProperty/air_temperature/foi/SSF/SP/4326/45.153318/9.488844",
   "resultValues": ""
 }
