@@ -7,8 +7,8 @@ var Subject_1 = require("rxjs/Subject");
 var SOSFeed = /** @class */ (function () {
     function SOSFeed(baseTopic) {
         if (baseTopic === void 0) { baseTopic = 'backup/casa-fabio/'; }
-        var _this = this;
-        this.sosUrl = 'http://sos:8080/observations/service';
+        this.sosUrl = process.env.SOS_URL || 'http://adminsos:password@sos52:8080/observations/service';
+        this.testUrl = process.env.SOS_URL || 'http://adminsos:password@sos52:8080/observations/service';
         this.mqttService = new mqtt_service_1.MqttService();
         this.resultTemplates = {};
         this.procedure = 'http://www.get-it.it/sensors/www.get-it.it/procedure/noManufacturerDeclared/noModelDeclared/noSerialNumberDeclared/20180328052658273_28432';
@@ -16,6 +16,29 @@ var SOSFeed = /** @class */ (function () {
         this.humidityURI = 'http://vocabs.lter-europe.net/EnvThes/EnvEu_114';
         this.sensorML = fs_1.readFileSync(__dirname + '/SOSRequests/SensorMLHome.xml', 'utf8');
         this.baseTopic = baseTopic;
+        /*
+                this.testInterval = setInterval( () => {
+                    this.test();
+                }, 1000);
+        */
+        this.init();
+    }
+    SOSFeed.prototype.test = function () {
+        var _this = this;
+        axios_1.default.get(this.testUrl)
+            .then(function (res) {
+            console.log('SOS attivo');
+            clearInterval(_this.testInterval);
+            _this.testInterval = null;
+            _this.init();
+        })
+            .catch(function (err) {
+            console.log('SOS error', err);
+        });
+    };
+    SOSFeed.prototype.init = function () {
+        var _this = this;
+        console.log('Initialising');
         this.getCapabilities()
             .subscribe(function (capabilities) {
             _this.capabilities = capabilities;
@@ -38,18 +61,13 @@ var SOSFeed = /** @class */ (function () {
                     console.log('error creating templates', err);
                 });
             }
+            else {
+                _this.insertSensor();
+            }
+        }, function (err) {
+            console.log('getCapabilities error', err);
         });
-        /*
-                this.insertSensor()
-                    .subscribe( res => {
-                        console.log('insertSensor results', res);
-                        this.getCapabilities()
-                            .subscribe( (capabilities: any) => {
-                                console.log('offering', capabilities.contents[0]);
-                            })
-                    })
-        */
-    }
+    };
     SOSFeed.prototype.listen = function () {
         var _this = this;
         this.resultTemplates.temperature = JSON.parse(fs_1.readFileSync(__dirname + '/SOSRequests/insertResult_home_temp.json', 'utf8'));

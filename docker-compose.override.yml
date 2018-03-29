@@ -31,9 +31,6 @@ services:
     entrypoint:
       - node
       - /app/src/sos-feed/index.js
-  sos:
-    ports:
-      - 8080:8080
 #  home-feed:
 #    build: .
 #    image: sos-alerting

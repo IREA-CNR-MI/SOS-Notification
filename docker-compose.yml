@@ -18,21 +18,22 @@ services:
   sos-feed:
     image: sos-alerting
     restart: unless-stopped
+    environment:
+      - SOS_URL=http://sos52:8080/observations/service
     entrypoint:
       - node
       - /app/src/sos-feed/index.js
     links:
-      - sos
+      - sos52
     depends_on:
-      - sos
+      - sos52
   home-feed:
     image: sos-alerting
     entrypoint:
       - node
       - /app/src/home-feed.js
     depends_on:
-      - sos
-
+      - sos52
   dbsos:
     image: geobeyond/dbsos-postgis:9.5
     restart: unless-stopped
@@ -48,21 +49,23 @@ services:
       - dbsosdata:/dbsosdatanpm init
     env_file:
       - ./scripts/docker/env/production/dbsos.env
-  sos:
-      image: geobeyond/sos-configured:4.4.2
-      restart: unless-stopped
-      container_name: sos4${COMPOSE_PROJECT_NAME}
-      stdin_open: true
-      # tty: true
-      labels:
-          org.geonode.component: sos
-          org.geonode.instance.name: geonode
-      depends_on:
-        - dbsos
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-      env_file:
-        - ./scripts/docker/env/production/sos.env
+  sos52:
+    image: geobeyond/sos-configured:4.4.2
+    restart: unless-stopped
+    container_name: sos4${COMPOSE_PROJECT_NAME}
+    stdin_open: true
+    ports:
+      - 8080:8080
+    # tty: true
+    labels:
+        org.geonode.component: sos
+        org.geonode.instance.name: geonode
+    depends_on:
+      - dbsos
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - ./scripts/docker/env/production/sos.env
   mongo:
     image: mongo:3.6
     restart: unless-stopped

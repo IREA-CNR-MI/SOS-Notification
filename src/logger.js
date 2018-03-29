@@ -29,6 +29,12 @@ mqttService.subscribe('#', function (topic, message) {
                         message: message
                     },
                     sentToSOS: false
+                })
+                    .then(function (res) {
+                    client.close();
+                })
+                    .catch(function (err) {
+                    client.close();
                 });
             }
         });

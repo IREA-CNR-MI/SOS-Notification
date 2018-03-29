@@ -4,7 +4,10 @@ import Axios from 'axios';
 import {Subject} from 'rxjs/Subject';
 
 export class SOSFeed {
-	sosUrl = 'http://sos:8080/observations/service';
+	sosUrl = process.env.SOS_URL || 'http://adminsos:password@sos52:8080/observations/service';
+	testUrl = process.env.SOS_URL || 'http://adminsos:password@sos52:8080/observations/service';
+	testInterval;
+
 	mqttService = new MqttService();
 	baseTopic;
 	// sensorML as a string, as it is in XML format
@@ -20,42 +23,58 @@ export class SOSFeed {
 		this.sensorML = readFileSync(__dirname + '/SOSRequests/SensorMLHome.xml', 'utf8');
 		this.baseTopic = baseTopic;
 
+/*
+		this.testInterval = setInterval( () => {
+			this.test();
+		}, 1000);
+*/
+		this.init();
+	}
+
+	test() {
+		Axios.get(this.testUrl)
+			.then( res => {
+				console.log('SOS attivo');
+				clearInterval(this.testInterval);
+				this.testInterval = null;
+				this.init();
+			})
+			.catch( err => {
+				console.log('SOS error', err);
+			})
+	}
+
+	init() {
+		console.log('Initialising');
 		this.getCapabilities()
 			.subscribe( (capabilities: any) => {
-				this.capabilities = capabilities;
+					this.capabilities = capabilities;
 
-				for ( let c of capabilities.contents ) {
-					console.log('cap', c);
-					for ( let p of c.procedure ) {
-						if ( p === this.procedure ) {
-							this.offering = c.identifier;
+					for ( let c of capabilities.contents ) {
+						console.log('cap', c);
+						for ( let p of c.procedure ) {
+							if ( p === this.procedure ) {
+								this.offering = c.identifier;
+							}
 						}
 					}
-				}
 
-				if ( this.offering ) {
-					this.insertResultTemplates()
-						.subscribe( (res: any) => {
-							console.log('templates created', res.data);
-							this.listen();
-						},
-							err => {
-							console.log('error creating templates', err);
-							})
-				}
-		})
-/*
-		this.insertSensor()
-			.subscribe( res => {
-				console.log('insertSensor results', res);
-				this.getCapabilities()
-					.subscribe( (capabilities: any) => {
-						console.log('offering', capabilities.contents[0]);
-					})
-			})
-*/
-
-
+					if ( this.offering ) {
+						this.insertResultTemplates()
+							.subscribe( (res: any) => {
+									console.log('templates created', res.data);
+									this.listen();
+								},
+								err => {
+									console.log('error creating templates', err);
+								})
+					} else {
+						this.insertSensor();
+					}
+				},
+				err => {
+					console.log('getCapabilities error', err);
+				})
 	}
 
 	listen() {
