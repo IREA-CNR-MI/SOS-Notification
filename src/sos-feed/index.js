@@ -10,9 +10,9 @@ var SOSFeed = /** @class */ (function () {
         this.sosUrl = 'http://sos:8080/observations/service';
         this.mqttService = new mqtt_service_1.MqttService();
         this.resultTemplates = {};
-        this.sensorML = fs_1.readFileSync(__dirname + '/../SOSRequests/SensorMLHome.xml', 'utf8');
-        this.resultTemplates.temperature = JSON.parse(fs_1.readFileSync(__dirname + '/../SOSRequests/InsertResult_home_temp.json', 'utf8'));
-        this.resultTemplates.humidity = JSON.parse(fs_1.readFileSync(__dirname + '/../SOSRequests/InsertResult_home_hum.json', 'utf8'));
+        this.sensorML = fs_1.readFileSync(__dirname + '/SOSRequests/SensorMLHome.xml', 'utf8');
+        this.resultTemplates.temperature = JSON.parse(fs_1.readFileSync(__dirname + '/SOSRequests/InsertResult_home_temp.json', 'utf8'));
+        this.resultTemplates.humidity = JSON.parse(fs_1.readFileSync(__dirname + '/SOSRequests/InsertResult_home_hum.json', 'utf8'));
         this.mqttService.subscribe(baseTopic + '#', function (topic, message) {
             console.log('received', message);
             var shortTopic = topic.substring(baseTopic.length);
