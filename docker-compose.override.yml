@@ -1,0 +1,50 @@
+version: '3.2'
+
+services:
+  main:
+    build: .
+    image: sos-alerting
+    volumes:
+      - type: bind
+        source: .
+        target: /app
+    entrypoint:
+      - node
+      - /app/src/index.js
+  logger:
+    build: .
+    image: sos-alerting
+    volumes:
+      - type: bind
+        source: .
+        target: /app
+    entrypoint:
+      - node
+      - /app/src/logger.js
+  sos-feed:
+    build: .
+    image: sos-alerting
+    volumes:
+      - type: bind
+        source: .
+        target: /app
+    entrypoint:
+      - node
+      - /app/src/sos-feed/index.js
+  sos:
+    ports:
+      - 8080:8080
+#  home-feed:
+#    build: .
+#    image: sos-alerting
+#    volumes:
+#      - type: bind
+#        source: .
+#        target: /app
+#    entrypoint:
+#      - node
+#      - /app/src/home-feed.js
+volumes:
+  src:
+    driver: local
+

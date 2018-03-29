@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?><!--XML generato da RITMARE - EDI - 2018-03-28-->
+<swes:InsertSensor xmlns:swes="http://www.opengis.net/swes/2.0" xmlns:gmd="http://www.isotc211.org/2005/gmd"
+                   xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:sml="http://www.opengis.net/sensorml/2.0"
+                   xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gml="http://www.opengis.net/gml/3.2"
+                   xmlns:swe="http://www.opengis.net/swe/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:sos="http://www.opengis.net/sos/2.0" service="SOS" version="2.0.0"
+                   xsi:schemaLocation="http://www.opengis.net/sos/2.0 http://schemas.opengis.net/sos/2.0/sosInsertSensor.xsd http://www.opengis.net/swes/2.0 http://schemas.opengis.net/swes/2.0/swes.xsd http://www.opengis.net/sensorml/2.0 http://schemas.opengis.net/sensorML/2.0/sensorML.xsd">
+    <swes:procedureDescriptionFormat>http://www.opengis.net/sensorml/2.0</swes:procedureDescriptionFormat>
+    <swes:procedureDescription>
+
+        <sml:PhysicalSystem gml:id="ID_Home_monitor">
+
+            <gml:description>RPi and Arduino based monitoring system collecting real-time temperature and humidity
+                within a residential home room
+            </gml:description>
+
+            <gml:identifier codeSpace="uniqueID">
+                http://www.get-it.it/sensors/www.get-it.it/procedure/noManufacturerDeclared/noModelDeclared/noSerialNumberDeclared/20180328052658273_28432
+            </gml:identifier>
+            <gml:name>Home monitor</gml:name>
+            <sml:keywords>
+                <sml:KeywordList>
+                    <sml:keyword>Arduino</sml:keyword>
+                    <sml:keyword>Home monitoring</sml:keyword>
+                    <sml:keyword>Weemos D1</sml:keyword>
+                    <sml:keyword>RPi</sml:keyword>
+                    <sml:keyword>Raspberry PI</sml:keyword>
+                </sml:KeywordList>
+            </sml:keywords>
+            <sml:identification>
+                <sml:IdentifierList>
+
+                    <sml:identifier>
+                        <sml:Term definition="http://mmisw.org/ont/ioos/definition/longName">
+                            <sml:label>long name</sml:label>
+                            <sml:value>Home Temperature &amp; Humidity Monitor</sml:value>
+                        </sml:Term>
+                    </sml:identifier>
+
+
+                </sml:IdentifierList>
+            </sml:identification>
+            <sml:classification>
+                <sml:ClassifierList>
+                    <sml:classifier>
+                        <sml:Term definition="http://www.opengis.net/def/property/OGC/0/SensorType">
+                            <sml:label>SensorType</sml:label>
+                            <sml:value>Tropospheric Ozone and Tracers from Commercial Aircraft Platforms</sml:value>
+                        </sml:Term>
+                    </sml:classifier>
+                </sml:ClassifierList>
+            </sml:classification>
+            <sml:validTime>
+                <gml:TimePeriod gml:id="deploymentDates">
+                    <gml:beginPosition>2018-03-28</gml:beginPosition>
+                    <gml:endPosition indeterminatePosition="now"/>
+                </gml:TimePeriod>
+            </sml:validTime>
+
+            <sml:capabilities name="metadata">
+                <sml:CapabilityList>
+                    <!-- status indicates, whether sensor is insitu (true)
+                    or remote (false) -->
+                    <sml:capability name="insitu">
+                        <swe:Boolean definition="insitu">
+                            <swe:value>true</swe:value>
+                        </swe:Boolean>
+                    </sml:capability>
+                    <!-- status indicates, whether sensor is mobile (true)
+                    or fixed/stationary (false) -->
+                    <sml:capability name="mobile">
+                        <swe:Boolean definition="mobile">
+                            <swe:value>false</swe:value>
+                        </swe:Boolean>
+                    </sml:capability>
+                </sml:CapabilityList>
+            </sml:capabilities>
+
+            <sml:contacts>
+                <sml:ContactList>
+
+
+                    <sml:contact
+                            xlink:arcrole="http://inspire.ec.europa.eu/metadata-codelist/ResponsiblePartyRole/pointOfContact">
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:organisationName>
+                                <gco:CharacterString>CNR - Institute for Electromagnetic Sensing of the Environment
+                                    (IREA)
+                                </gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:address>
+                                        <gmd:CI_Address>
+                                            <gmd:deliveryPoint>
+                                                <gco:CharacterString>Via Bassini, 15</gco:CharacterString>
+                                            </gmd:deliveryPoint>
+                                            <gmd:city>
+                                                <gco:CharacterString>Milano</gco:CharacterString>
+                                            </gmd:city>
+                                            <gmd:postalCode>
+                                                <gco:CharacterString>20133</gco:CharacterString>
+                                            </gmd:postalCode>
+                                            <gmd:country>
+                                                <gco:CharacterString>Italy</gco:CharacterString>
+                                            </gmd:country>
+                                            <gmd:electronicMailAddress>
+                                                <gco:CharacterString>mailto:pavesi.p@irea.cnr.it</gco:CharacterString>
+                                            </gmd:electronicMailAddress>
+                                        </gmd:CI_Address>
+                                    </gmd:address>
+                                    <gmd:onlineResource>
+                                        <gmd:CI_OnlineResource>
+                                            <gmd:linkage>
+                                                <gmd:URL>http://www.irea.cnr.it</gmd:URL>
+                                            </gmd:linkage>
+                                        </gmd:CI_OnlineResource>
+                                    </gmd:onlineResource>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                        codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                        codeListValue="pointOfContact">pointOfContact
+                                </gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </sml:contact>
+                </sml:ContactList>
+            </sml:contacts>
+
+
+            <sml:outputs>
+                <sml:OutputList>
+                    <sml:output name="phenomenonTime">
+                        <swe:Time definition="http://www.opengis.net/def/property/OGC/0/PhenomenonTime">
+                            <swe:uom xlink:href="http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"/>
+                        </swe:Time>
+                    </sml:output>
+                    <sml:output name="air_temperature">
+                        <swe:Quantity definition="http://vocabs.lter-europe.net/EnvThes/USLterCV_22">
+                            <swe:uom code="°C" xlink:href="http://vocabs.lter-europe.net/EnvThes/EUUnits_5"/>
+                        </swe:Quantity>
+                    </sml:output>
+                    <sml:output name="air_humidity">
+                        <swe:Quantity definition="http://vocabs.lter-europe.net/EnvThes/EnvEu_114">
+                            <swe:uom code="‰" xlink:href="http://vocabs.lter-europe.net/EnvThes/EUUnits_19"/>
+                        </swe:Quantity>
+                    </sml:output>
+                </sml:OutputList>
+            </sml:outputs>
+
+            <sml:position>
+                <swe:Vector id="SYSTEM_LOCATION" referenceFrame="wgs84">
+                    <swe:coordinate name="easting">
+                        <swe:Quantity axisID="Lon" definition="longitude">
+                            <swe:uom code="degree" xlink:href="http://vocab.nerc.ac.uk/collection/P06/current/UAAA/"/>
+                            <swe:value>9.488844</swe:value>
+                        </swe:Quantity>
+                    </swe:coordinate>
+                    <swe:coordinate name="northing">
+                        <swe:Quantity axisID="Lat" definition="latitude">
+                            <swe:uom code="degree" xlink:href="http://vocab.nerc.ac.uk/collection/P06/current/UAAA/"/>
+                            <swe:value>45.153318</swe:value>
+                        </swe:Quantity>
+                    </swe:coordinate>
+                    <swe:coordinate name="altitude">
+                        <swe:Quantity axisID="Alt" definition="altitude">
+                            <swe:uom code="m" xlink:href="http://vocab.nerc.ac.uk/collection/P06/current/ULAA/"/>
+                            <swe:value>68</swe:value>
+                        </swe:Quantity>
+                    </swe:coordinate>
+                </swe:Vector>
+            </sml:position>
+        </sml:PhysicalSystem>
+
+    </swes:procedureDescription>
+    <!-- multiple values possible -->
+    <swes:observableProperty xmlns:sf="http://www.opengis.net/sampling/2.0">
+        http://vocabs.lter-europe.net/EnvThes/USLterCV_22
+    </swes:observableProperty>
+    <swes:observableProperty xmlns:sf="http://www.opengis.net/sampling/2.0">
+        http://vocabs.lter-europe.net/EnvThes/EnvEu_114
+    </swes:observableProperty>
+    <swes:observableProperty xmlns:sf="http://www.opengis.net/sampling/2.0">
+        http://www.opengis.net/def/property/OGC/0/PhenomenonTime
+    </swes:observableProperty>
+    <swes:metadata>
+        <sos:SosInsertionMetadata>
+            <!-- multiple values possible -->
+            <sos:observationType>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement
+            </sos:observationType>
+            <sos:observationType>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_SWEArrayObservation
+            </sos:observationType>
+            <!-- multiple values possible -->
+            <sos:featureOfInterestType>http://www.opengis.net/def/samplingFeatureType/OGC-OM/2.0/SF_SamplingPoint
+            </sos:featureOfInterestType>
+        </sos:SosInsertionMetadata>
+    </swes:metadata>
+
+</swes:InsertSensor>

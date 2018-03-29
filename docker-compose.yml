@@ -1,0 +1,63 @@
+version: '3.2'
+
+services:
+  main:
+    image: sos-alerting
+    entrypoint:
+      - node
+      - /app/src/index.js
+  logger:
+    image: sos-alerting
+    entrypoint:
+      - node
+      - /app/src/logger.js
+  sos-feed:
+    image: sos-alerting
+    entrypoint:
+      - node
+      - /app/src/sos-feed/index.js
+    links:
+      - sos
+    depends_on:
+      - sos
+#  home-feed:
+#    image: sos-alerting
+#    entrypoint:
+#      - node
+#      - /app/src/home-feed.js
+#    depends_on:
+#      - sos
+
+  dbsos:
+    image: geobeyond/dbsos-postgis:9.5
+    restart: unless-stopped
+    container_name: dbsos4${COMPOSE_PROJECT_NAME}
+    stdin_open: true
+    # tty: true
+    labels:
+        org.geonode.component: dbsos
+        org.geonode.instance.name: geonode
+    # ports:
+    #   - 5432:5432
+    volumes:
+      - dbsosdata:/dbsosdatanpm init
+    env_file:
+      - ./scripts/docker/env/production/dbsos.env
+  sos:
+      image: geobeyond/sos-configured:4.4.2
+      restart: unless-stopped
+      container_name: sos4${COMPOSE_PROJECT_NAME}
+      stdin_open: true
+      # tty: true
+      labels:
+          org.geonode.component: sos
+          org.geonode.instance.name: geonode
+      depends_on:
+        - dbsos
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+      env_file:
+        - ./scripts/docker/env/production/sos.env
+volumes:
+  dbdata:
+  dbsosdata:

@@ -1,0 +1,21 @@
+{
+  "name": "alertingsos",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/axios": "0.14.0",
+    "@types/mqtt": "2.5.0",
+    "@types/node": "9.4.7",
+    "@types/node-telegram-bot-api": "0.28.2",
+    "axios": "0.18.0",
+    "mqtt": "2.16.0",
+    "node-telegram-bot-api": "0.30.0",
+    "rxjs": "5.5.7"
+  }
+}

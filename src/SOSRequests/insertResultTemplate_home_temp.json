@@ -1,0 +1,63 @@
+{
+  "request": "InsertResultTemplate",
+  "service": "SOS",
+  "version": "2.0.0",
+  "identifier": "http://www.get-it.it/sensors/mqtt.get-it.it/procedure/noManufacturerDeclared/noModelDeclared/noSerialNumberDeclared/20180328052658273_28432/template/observedProperty/air_temperature/foi/SSF/SP/4326/45.153318/9.488844",
+  "offering": "offering:38FFAE8DEF096C67FDB540D0D1E837E96DD4A5B4/observations",
+  "observationTemplate": {
+    "type": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+    "procedure": "http://www.get-it.it/sensors/www.get-it.it/procedure/noManufacturerDeclared/noModelDeclared/noSerialNumberDeclared/20180328052658273_28432",
+    "observedProperty": "http://vocabs.lter-europe.net/EnvThes/USLterCV_22",
+    "featureOfInterest": {
+      "identifier": {
+        "value": "http://www.get-it.it/sensors/foi/SSF/SP/4326/45.153318/9.488844",
+        "codespace": "http://www.opengis.net/def/nil/OGC/0/unknown"
+      },
+      "name": [
+        {
+          "value": "Living room",
+          "codespace": "http://www.opengis.net/def/nil/OGC/0/unknown"
+        }
+      ],
+      "sampledFeature": [
+        "http://www.52north.org/test/featureOfInterest/world"
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          45.153318,
+          9.488844
+        ],
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:4326"
+          }
+        }
+      }
+    },
+    "phenomenonTime": "template",
+    "resultTime": "template",
+    "result": ""
+  },
+  "resultStructure": {
+    "fields": [
+      {
+        "type": "time",
+        "name": "phenomenonTime",
+        "definition": "http://www.opengis.net/def/property/OGC/0/PhenomenonTime",
+        "uom": "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+      },
+      {
+        "type": "quantity",
+        "name": "air_temperature",
+        "definition": "http://vocabs.lter-europe.net/EnvThes/USLterCV_22",
+        "uom": "°C"
+      }
+    ]
+  },
+  "resultEncoding": {
+    "tokenSeparator": ",",
+    "blockSeparator": "#"
+  }
+}
