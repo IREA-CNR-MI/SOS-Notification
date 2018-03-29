@@ -11,8 +11,8 @@ export class SOSFeed {
 
 	constructor(baseTopic = 'backup/casa-fabio/') {
 		this.sensorML = readFileSync(__dirname + '/SOSRequests/SensorMLHome.xml', 'utf8');
-		this.resultTemplates.temperature = JSON.parse(readFileSync(__dirname + '/SOSRequests/InsertResult_home_temp.json', 'utf8'));
-		this.resultTemplates.humidity = JSON.parse(readFileSync(__dirname + '/SOSRequests/InsertResult_home_hum.json', 'utf8'));
+		this.resultTemplates.temperature = JSON.parse(readFileSync(__dirname + '/SOSRequests/insertResult_home_temp.json', 'utf8'));
+		this.resultTemplates.humidity = JSON.parse(readFileSync(__dirname + '/SOSRequests/insertResult_home_hum.json', 'utf8'));
 		this.mqttService.subscribe(baseTopic + '#', (topic, message) => {
 			console.log('received', message);
 			const shortTopic = topic.substring(baseTopic.length);
