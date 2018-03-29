@@ -17,3 +17,4 @@ mqttService.subscribe('systems/+/component/obsProp/#', function (topic, message)
         }
     }
 });
+//# sourceMappingURL=index.js.map

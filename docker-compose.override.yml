@@ -44,6 +44,9 @@ services:
 #    entrypoint:
 #      - node
 #      - /app/src/home-feed.js
+  mongo:
+    ports:
+      - 2222:27017
 volumes:
   src:
     driver: local

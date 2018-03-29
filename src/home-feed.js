@@ -18,3 +18,4 @@ mqttService.subscribe('domotica/60:01:94:5D:55:9A/sensors/#', function (topic, m
         }
     */
 });
+//# sourceMappingURL=home-feed.js.map

@@ -73,3 +73,4 @@ var TelegramBot = /** @class */ (function () {
     return TelegramBot;
 }());
 exports.TelegramBot = TelegramBot;
+//# sourceMappingURL=telegram-bot.js.map
