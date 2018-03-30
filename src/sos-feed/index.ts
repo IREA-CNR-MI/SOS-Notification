@@ -190,8 +190,8 @@ export class SOSFeed {
 			.catch( err => {
 				console.log('error with GetResultTemplate', err);
 
-				this.resultTemplates.temperature = JSON.parse(readFileSync(__dirname + '/SOSRequests/InsertResultTemplate_home_temp.json', 'utf8'));
-				this.resultTemplates.humidity = JSON.parse(readFileSync(__dirname + '/SOSRequests/InsertResultTemplate_home_hum.json', 'utf8'));
+				this.resultTemplates.temperature = JSON.parse(readFileSync(__dirname + '/SOSRequests/insertResultTemplate_home_temp.json', 'utf8'));
+				this.resultTemplates.humidity = JSON.parse(readFileSync(__dirname + '/SOSRequests/insertResultTemplate_home_hum.json', 'utf8'));
 
 				console.log('temperature template', this.resultTemplates.temperature);
 				this.resultTemplates.temperature.offering = this.offering;

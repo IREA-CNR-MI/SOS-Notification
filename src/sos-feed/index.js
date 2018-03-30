@@ -175,8 +175,8 @@ var SOSFeed = /** @class */ (function () {
         })
             .catch(function (err) {
             console.log('error with GetResultTemplate', err);
-            _this.resultTemplates.temperature = JSON.parse(fs_1.readFileSync(__dirname + '/SOSRequests/InsertResultTemplate_home_temp.json', 'utf8'));
-            _this.resultTemplates.humidity = JSON.parse(fs_1.readFileSync(__dirname + '/SOSRequests/InsertResultTemplate_home_hum.json', 'utf8'));
+            _this.resultTemplates.temperature = JSON.parse(fs_1.readFileSync(__dirname + '/SOSRequests/insertResultTemplate_home_temp.json', 'utf8'));
+            _this.resultTemplates.humidity = JSON.parse(fs_1.readFileSync(__dirname + '/SOSRequests/insertResultTemplate_home_hum.json', 'utf8'));
             console.log('temperature template', _this.resultTemplates.temperature);
             _this.resultTemplates.temperature.offering = _this.offering;
             _this.resultTemplates.temperature.observationTemplate.procedure = _this.procedure;
