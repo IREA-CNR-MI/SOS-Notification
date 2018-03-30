@@ -3,9 +3,11 @@ import {MqttService} from '../mqtt-service';
 import Axios from 'axios';
 import {Subject} from 'rxjs/Subject';
 
+const DEFAULT_SOS = 'http://enygma.it:8098/52n-sos-webapp/service';
+
 export class SOSFeed {
-	sosUrl = process.env.SOS_URL || 'http://adminsos:password@sos52:8080/observations/service';
-	testUrl = process.env.SOS_URL || 'http://adminsos:password@sos52:8080/observations/service';
+	sosUrl = process.env.SOS_URL || DEFAULT_SOS;
+	testUrl = process.env.SOS_URL || DEFAULT_SOS;
 	testInterval;
 
 	mqttService = new MqttService();
@@ -55,6 +57,7 @@ export class SOSFeed {
 						for ( let p of c.procedure ) {
 							if ( p === this.procedure ) {
 								this.offering = c.identifier;
+								console.log('offering is', this.offering);
 							}
 						}
 					}
@@ -180,15 +183,15 @@ export class SOSFeed {
 			"request": "GetResultTemplate",
 			"service": "SOS",
 			"version": "2.0.0",
-			"offering": "offering:B5D7975C5DE8DAAE2972DA1E10B2D6D617F49740/observations",
-			"observedProperty": "http://vocabs.lter-europe.net/EnvThes/USLterCV_22"
+			"offering": this.offering,
+			"observedProperty": this.temperatureURI
 		})
 			.then( res => {
 				console.log('templates are already there');
 				results.next(res);
 			})
 			.catch( err => {
-				console.log('error with GetResultTemplate', err);
+				console.log('error with GetResultTemplate', err.data.response.data);
 
 				this.resultTemplates.temperature = JSON.parse(readFileSync(__dirname + '/SOSRequests/insertResultTemplate_home_temp.json', 'utf8'));
 				this.resultTemplates.humidity = JSON.parse(readFileSync(__dirname + '/SOSRequests/insertResultTemplate_home_hum.json', 'utf8'));

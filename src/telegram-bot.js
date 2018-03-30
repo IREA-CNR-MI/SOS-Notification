@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var TelegramBotApi = require("node-telegram-bot-api");
 var fs = require("fs");
 var token = '517522188:AAHqkW_VebuqgG_aWBIGyBianTfDyaQoFDs';
-var TelegramBot = /** @class */ (function () {
+var TelegramBot = (function () {
     function TelegramBot() {
         var _this = this;
         this.bot = new TelegramBotApi(token, { polling: true });

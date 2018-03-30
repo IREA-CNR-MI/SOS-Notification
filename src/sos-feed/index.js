@@ -4,11 +4,12 @@ var fs_1 = require("fs");
 var mqtt_service_1 = require("../mqtt-service");
 var axios_1 = require("axios");
 var Subject_1 = require("rxjs/Subject");
-var SOSFeed = /** @class */ (function () {
+var DEFAULT_SOS = 'http://enygma.it:8098/52n-sos-webapp/service';
+var SOSFeed = (function () {
     function SOSFeed(baseTopic) {
         if (baseTopic === void 0) { baseTopic = 'backup/casa-fabio/'; }
-        this.sosUrl = process.env.SOS_URL || 'http://adminsos:password@sos52:8080/observations/service';
-        this.testUrl = process.env.SOS_URL || 'http://adminsos:password@sos52:8080/observations/service';
+        this.sosUrl = process.env.SOS_URL || DEFAULT_SOS;
+        this.testUrl = process.env.SOS_URL || DEFAULT_SOS;
         this.mqttService = new mqtt_service_1.MqttService();
         this.resultTemplates = {};
         this.procedure = 'http://www.get-it.it/sensors/www.get-it.it/procedure/noManufacturerDeclared/noModelDeclared/noSerialNumberDeclared/20180328052658273_28432';
@@ -49,6 +50,7 @@ var SOSFeed = /** @class */ (function () {
                     var p = _c[_b];
                     if (p === _this.procedure) {
                         _this.offering = c.identifier;
+                        console.log('offering is', _this.offering);
                     }
                 }
             }
@@ -166,15 +168,15 @@ var SOSFeed = /** @class */ (function () {
             "request": "GetResultTemplate",
             "service": "SOS",
             "version": "2.0.0",
-            "offering": "offering:B5D7975C5DE8DAAE2972DA1E10B2D6D617F49740/observations",
-            "observedProperty": "http://vocabs.lter-europe.net/EnvThes/USLterCV_22"
+            "offering": this.offering,
+            "observedProperty": this.temperatureURI
         })
             .then(function (res) {
             console.log('templates are already there');
             results.next(res);
         })
             .catch(function (err) {
-            console.log('error with GetResultTemplate', err);
+            console.log('error with GetResultTemplate', err.data.response.data);
             _this.resultTemplates.temperature = JSON.parse(fs_1.readFileSync(__dirname + '/SOSRequests/insertResultTemplate_home_temp.json', 'utf8'));
             _this.resultTemplates.humidity = JSON.parse(fs_1.readFileSync(__dirname + '/SOSRequests/insertResultTemplate_home_hum.json', 'utf8'));
             console.log('temperature template', _this.resultTemplates.temperature);
