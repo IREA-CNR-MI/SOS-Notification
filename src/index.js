@@ -6,10 +6,17 @@ var mqttService = new mqtt_service_1.MqttService();
 var telegramBot = new telegram_bot_1.TelegramBot();
 mqttService.subscribe('systems/+/component/obsProp/#', function (topic, message) {
     console.log('index received', topic, message);
+    var obsProp = null;
     if (topic.indexOf('temperature') >= 0) {
-        var obsProp = 'Temperature';
+        obsProp = 'temperature';
+    }
+    else if (topic.indexOf('humidity') >= 0) {
+        obsProp = 'humidity';
+    }
+    if (obsProp) {
         var value = parseInt(message);
-        var subscribed = telegramBot.getSubscribedTo('temperature');
+        telegramBot.state[obsProp] = value;
+        var subscribed = telegramBot.getSubscribedTo(obsProp);
         for (var _i = 0, subscribed_1 = subscribed; _i < subscribed_1.length; _i++) {
             var c = subscribed_1[_i];
             for (var _a = 0, _b = c.subscribedTo; _a < _b.length; _a++) {
@@ -41,14 +48,6 @@ mqttService.subscribe('systems/+/component/obsProp/#', function (topic, message)
                 }
             }
             telegramBot.updateConversation(c);
-        }
-        if (parseInt(message) >= 38) {
-            telegramBot.send('temperature is now ' + message + ' - topic (' + topic + ')');
-        }
-    }
-    else if (topic.indexOf('humidity') >= 0) {
-        if (parseInt(message) <= 4) {
-            telegramBot.send('battery is now ' + message + ' - topic (' + topic + ')');
         }
     }
 });

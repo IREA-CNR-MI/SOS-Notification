@@ -5,7 +5,7 @@ var mqtt_service_1 = require("../mqtt-service");
 var axios_1 = require("axios");
 var Subject_1 = require("rxjs/Subject");
 var DEFAULT_SOS = 'http://enygma.it:8098/52n-sos-webapp/service';
-var SOSFeed = (function () {
+var SOSFeed = /** @class */ (function () {
     function SOSFeed(baseTopic) {
         if (baseTopic === void 0) { baseTopic = 'backup/casa-fabio/'; }
         this.sosUrl = process.env.SOS_URL || DEFAULT_SOS;

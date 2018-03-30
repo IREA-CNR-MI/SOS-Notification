@@ -16,7 +16,7 @@ exports.ACTIVE_MQTT_CONFIGS = [
     exports.RPi_CONFIG
 ];
 var config = exports.MOSCA_CONFIG;
-var MqttService = (function () {
+var MqttService = /** @class */ (function () {
     function MqttService(config) {
         if (config === void 0) { config = exports.MOSCA_CONFIG; }
         var _this = this;

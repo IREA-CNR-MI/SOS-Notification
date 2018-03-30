@@ -3,14 +3,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var TelegramBotApi = require("node-telegram-bot-api");
 var fs = require("fs");
 var token = '517522188:AAHqkW_VebuqgG_aWBIGyBianTfDyaQoFDs';
-var TelegramBot = (function () {
+var json = require('format-json');
+var TelegramBot = /** @class */ (function () {
     function TelegramBot() {
         var _this = this;
         this.bot = new TelegramBotApi(token, { polling: true });
         this.conversations = [];
+        this.availableProperties = [
+            'temperature',
+            'humidity'
+        ];
+        this.state = {
+            humidity: -1,
+            temperature: -1
+        };
         this.conversations = JSON.parse(fs.readFileSync('conversations.json').toString());
         console.log('TelegramBot', this.conversations);
-        this.bot.onText(/\/subscribe/, function (msg) {
+        this.bot.onText(/\/start/, function (msg) {
             console.log('subscribe', msg);
             _this.bot.sendMessage(msg.chat.id, "Welcome to " + msg.chat.id);
             var temp = Object.assign({}, msg.chat);
@@ -18,50 +27,74 @@ var TelegramBot = (function () {
             _this.conversations.push(msg.chat);
             fs.writeFileSync('conversations.json', JSON.stringify(_this.conversations), 'utf8');
         });
-        this.bot.onText(/\/unsubscribe/, function (msg) {
-            console.log('unsubscribe', msg);
-            _this.bot.sendMessage(msg.chat.id, "Goodbye " + msg.chat.id);
-            _this.unsubscribe(msg.chat.id);
-            fs.writeFileSync('conversations.json', JSON.stringify(_this.conversations), 'utf8');
-        });
-        this.bot.onText(/\/filter ([a-z]+) ([<>=]+) ([0-9]+)/, function (msg, match) {
+        this.bot.onText(/\/notify ([a-z]+) ([<>=]+) ([0-9]+)/, function (msg, match) {
             console.log('received filter', msg, match);
             var obsProp = match[1];
             var operator = match[2];
             var value = match[3];
             var convo = _this.getConversation(msg.chat.id);
             if (convo) {
+                convo.subscribedTo.push({
+                    observedProperty: obsProp,
+                    filter: {
+                        operator: operator,
+                        value: value,
+                        triggered: false
+                    }
+                });
+                console.log('convo', convo);
+                _this.saveConversations();
                 console.log('filtering on', msg.chat.id, obsProp, operator, value);
+                _this.sendTo(msg.chat.id, 'Alright, mate, I\'ll notify you when ' + obsProp + ' ' + operator + ' ' + value);
             }
         });
-        this.bot.onText(/\/status/, function (msg, match) {
+        this.bot.onText(/\/state/, function (msg, match) {
             console.log('status request');
-            // client.publish('casa/soggiorno', 'status');
+            _this.sendTo(msg.chat.id, '*Current state:*' + json.plain(_this.state));
         });
-        this.bot.onText(/\/manual/, function (msg, match) {
-            console.log('status request');
+        this.bot.onText(/\/properties/, function (msg, match) {
+            console.log('properties');
+            _this.sendTo(msg.chat.id, '*Available properties:*' + json.plain(_this.availableProperties));
             // client.publish('casa/soggiorno/luci', 'manual');
         });
-        this.bot.onText(/\/auto/, function (msg, match) {
-            console.log('status request');
-            // client.publish('casa/soggiorno/luci', 'auto');
-        });
-        this.bot.onText(/\/training_on/, function (msg, match) {
-            console.log('status request');
-            // client.publish('casa', 'training');
-        });
-        this.bot.onText(/\/training_off/, function (msg, match) {
-            console.log('status request');
-            // client.publish('casa', 'training stop');
+        this.bot.onText(/\/criteria/, function (msg, match) {
+            console.log('criteria');
+            _this.sendTo(msg.chat.id, '*Your notification criteria are:* ' + json.plain(_this.getConversation(msg.chat.id).subscribedTo));
         });
         /*
-                this.bot.on('message', (msg) => {
-                    const chatId = msg.chat.id;
-
-                    // send a message to the chat acknowledging receipt of their message
-                    this.send('Received a message from ' + msg.chat.first_name + ' ' + msg.chat.last_name + ': \'' + msg + '\'');
+                this.bot.onText(/\/clear/, (msg, match) => {
+                    console.log('clear all criteria');
+                    const convo = this.getConversation(msg.chat.id);
+                    if ( convo ) {
+                        convo.subscribedTo = [];
+                        this.saveConversations();
+                        this.sendTo(msg.chat.id, 'Alright, mate, no more notifications');
+                    }
                 });
         */
+        this.bot.onText(/\/clear (.*)/, function (msg, match) {
+            var obsProp = match[1];
+            console.log('clear criteria about', obsProp);
+            var convo = _this.getConversation(msg.chat.id);
+            if (convo) {
+                for (var i = convo.subscribedTo.length - 1; i >= 0; i--) {
+                    var subscription = convo.subscribedTo[i];
+                    if (subscription && (obsProp === 'all' || subscription.observedProperty === obsProp)) {
+                        console.log('removing', subscription);
+                        convo.subscribedTo.splice(i, 1);
+                    }
+                }
+                _this.saveConversations();
+                console.log('cleared criteria about', obsProp);
+                _this.sendTo(msg.chat.id, 'Alright, mate, you\'ve got these notifications left: ' + json.plain(convo.subscribedTo));
+            }
+            else {
+                console.log('chat', msg.chat.id, 'not found');
+            }
+        });
+        this.bot.on('polling_error', function (error) {
+            console.log('polling error', error); // => 'EFATAL'
+        });
     }
     TelegramBot.prototype.getSubscribedTo = function (topic) {
         var temp = [];
@@ -79,6 +112,7 @@ var TelegramBot = (function () {
         return temp;
     };
     TelegramBot.prototype.saveConversations = function () {
+        console.log('saving conversations');
         fs.writeFileSync('conversations.json', JSON.stringify(this.conversations), 'utf8');
     };
     TelegramBot.prototype.getConversation = function (id) {
@@ -110,11 +144,11 @@ var TelegramBot = (function () {
         for (var _i = 0, _a = this.conversations; _i < _a.length; _i++) {
             var c = _a[_i];
             // console.log('send', c);
-            this.bot.sendMessage(c.id, message, { parse_mode: "HTML" });
+            this.bot.sendMessage(c.id, message, { parse_mode: "markdown" });
         }
     };
     TelegramBot.prototype.sendTo = function (chat, message) {
-        this.bot.sendMessage(chat, message, { parse_mode: "HTML" });
+        this.bot.sendMessage(chat, message, { parse_mode: "markdown" });
     };
     return TelegramBot;
 }());
