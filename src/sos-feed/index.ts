@@ -25,23 +25,23 @@ export class SOSFeed {
 		this.sensorML = readFileSync(__dirname + '/SOSRequests/SensorMLHome.xml', 'utf8');
 		this.baseTopic = baseTopic;
 
-/*
-		this.testInterval = setInterval( () => {
-			this.test();
-		}, 1000);
-*/
+		/*
+				this.testInterval = setInterval( () => {
+					this.test();
+				}, 1000);
+		*/
 		this.init();
 	}
 
 	test() {
 		Axios.get(this.testUrl)
-			.then( res => {
+			.then(res => {
 				console.log('SOS attivo');
 				clearInterval(this.testInterval);
 				this.testInterval = null;
 				this.init();
 			})
-			.catch( err => {
+			.catch(err => {
 				console.log('SOS error', err);
 			})
 	}
@@ -49,22 +49,22 @@ export class SOSFeed {
 	init() {
 		console.log('Initialising');
 		this.getCapabilities()
-			.subscribe( (capabilities: any) => {
+			.subscribe((capabilities: any) => {
 					this.capabilities = capabilities;
 
-					for ( let c of capabilities.contents ) {
+					for (let c of capabilities.contents) {
 						console.log('cap', c);
-						for ( let p of c.procedure ) {
-							if ( p === this.procedure ) {
+						for (let p of c.procedure) {
+							if (p === this.procedure) {
 								this.offering = c.identifier;
 								console.log('offering is', this.offering);
 							}
 						}
 					}
 
-					if ( this.offering ) {
+					if (this.offering) {
 						this.insertResultTemplates()
-							.subscribe( (res: any) => {
+							.subscribe((res: any) => {
 									console.log('templates created', res.data);
 									this.listen();
 								},
@@ -98,22 +98,42 @@ export class SOSFeed {
 						temp = this.resultTemplates.temperature;
 						temp.resultValues = '' + payload.timestamp + ',' + payload.value + '#';
 
-						Axios.post(this.sosUrl, temp)
-							.then( res => {
+						Axios({
+							url: this.sosUrl,
+							data: temp,
+							method: 'post',
+							headers: {
+								'Authorization': 'changeme',
+								'Content-Type': 'application/json',
+								'Accept': 'application/json',
+								'Accept-Encoding': 'gzip, deflate'
+							}
+						})
+							.then(res => {
 								console.log('insert results', res.data);
 							})
-							.catch( err => {
+							.catch(err => {
 								console.log('insert error', err);
 							})
 						break;
 					case 'humidity':
 						temp = this.resultTemplates.humidity;
 						temp.resultValues = '' + payload.timestamp + ',' + payload.value + '#';
-						Axios.post(this.sosUrl, temp)
-							.then( res => {
+						Axios({
+							url: this.sosUrl,
+							data: temp,
+							method: 'post',
+							headers: {
+								'Authorization': 'changeme',
+								'Content-Type': 'application/json',
+								'Accept': 'application/json',
+								'Accept-Encoding': 'gzip, deflate'
+							}
+						})
+							.then(res => {
 								console.log('insert results', res.data);
 							})
-							.catch( err => {
+							.catch(err => {
 								console.log('insert error', err);
 							})
 						break;
@@ -125,28 +145,29 @@ export class SOSFeed {
 			}
 		});
 	}
+
 	getCapabilities() {
 		const results = new Subject();
 		const temp = {
-			"request": "GetCapabilities",
-			"service": "SOS",
-			"sections": [
-/*
-				"ServiceIdentification",
-				"ServiceProvider",
-				"OperationsMetadata",
-				"FilterCapabilities",
-*/
-				"Contents"
+			'request': 'GetCapabilities',
+			'service': 'SOS',
+			'sections': [
+				/*
+								"ServiceIdentification",
+								"ServiceProvider",
+								"OperationsMetadata",
+								"FilterCapabilities",
+				*/
+				'Contents'
 			]
 		};
 
 		Axios.post(this.sosUrl, temp)
-			.then( res => {
+			.then(res => {
 				// console.log('getCapabilities results', res.data);
 				results.next(res.data);
 			})
-			.catch( err => {
+			.catch(err => {
 				console.log('getCapabilities error', err);
 				results.error(err);
 			})
@@ -165,11 +186,11 @@ export class SOSFeed {
 			},
 			data: temp
 		})
-			.then( res => {
+			.then(res => {
 				console.log('insert sensor results', res.data);
 				results.next(res.data);
 			})
-			.catch( err => {
+			.catch(err => {
 				console.log('insert sensor error', err);
 				results.error(err);
 			})
@@ -180,17 +201,17 @@ export class SOSFeed {
 		const results = new Subject();
 
 		Axios.post(this.sosUrl, {
-			"request": "GetResultTemplate",
-			"service": "SOS",
-			"version": "2.0.0",
-			"offering": this.offering,
-			"observedProperty": this.temperatureURI
+			'request': 'GetResultTemplate',
+			'service': 'SOS',
+			'version': '2.0.0',
+			'offering': this.offering,
+			'observedProperty': this.temperatureURI
 		})
-			.then( res => {
+			.then(res => {
 				console.log('templates are already there');
 				results.next(res);
 			})
-			.catch( err => {
+			.catch(err => {
 				console.log('error with GetResultTemplate', err.data.response.data);
 
 				this.resultTemplates.temperature = JSON.parse(readFileSync(__dirname + '/SOSRequests/insertResultTemplate_home_temp.json', 'utf8'));
@@ -206,16 +227,16 @@ export class SOSFeed {
 				this.resultTemplates.humidity.observationTemplate.observedProperty = this.humidityURI;
 
 				Axios.post(this.sosUrl, this.resultTemplates.temperature)
-					.then( res1 => {
+					.then(res1 => {
 						Axios.post(this.sosUrl, this.resultTemplates.humidity)
-							.then( res2 => {
+							.then(res2 => {
 								results.next(res2)
 							})
-							.catch( err => {
+							.catch(err => {
 								results.error(err);
 							})
 					})
-					.catch( err => {
+					.catch(err => {
 						results.error(err);
 					})
 			})

@@ -86,7 +86,17 @@ var SOSFeed = /** @class */ (function () {
                     case 'temperature':
                         temp = _this.resultTemplates.temperature;
                         temp.resultValues = '' + payload.timestamp + ',' + payload.value + '#';
-                        axios_1.default.post(_this.sosUrl, temp)
+                        axios_1.default({
+                            url: _this.sosUrl,
+                            data: temp,
+                            method: 'post',
+                            headers: {
+                                'Authorization': 'changeme',
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'Accept-Encoding': 'gzip, deflate'
+                            }
+                        })
                             .then(function (res) {
                             console.log('insert results', res.data);
                         })
@@ -97,7 +107,17 @@ var SOSFeed = /** @class */ (function () {
                     case 'humidity':
                         temp = _this.resultTemplates.humidity;
                         temp.resultValues = '' + payload.timestamp + ',' + payload.value + '#';
-                        axios_1.default.post(_this.sosUrl, temp)
+                        axios_1.default({
+                            url: _this.sosUrl,
+                            data: temp,
+                            method: 'post',
+                            headers: {
+                                'Authorization': 'changeme',
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'Accept-Encoding': 'gzip, deflate'
+                            }
+                        })
                             .then(function (res) {
                             console.log('insert results', res.data);
                         })
@@ -116,16 +136,16 @@ var SOSFeed = /** @class */ (function () {
     SOSFeed.prototype.getCapabilities = function () {
         var results = new Subject_1.Subject();
         var temp = {
-            "request": "GetCapabilities",
-            "service": "SOS",
-            "sections": [
+            'request': 'GetCapabilities',
+            'service': 'SOS',
+            'sections': [
                 /*
                                 "ServiceIdentification",
                                 "ServiceProvider",
                                 "OperationsMetadata",
                                 "FilterCapabilities",
                 */
-                "Contents"
+                'Contents'
             ]
         };
         axios_1.default.post(this.sosUrl, temp)
@@ -165,11 +185,11 @@ var SOSFeed = /** @class */ (function () {
         var _this = this;
         var results = new Subject_1.Subject();
         axios_1.default.post(this.sosUrl, {
-            "request": "GetResultTemplate",
-            "service": "SOS",
-            "version": "2.0.0",
-            "offering": this.offering,
-            "observedProperty": this.temperatureURI
+            'request': 'GetResultTemplate',
+            'service': 'SOS',
+            'version': '2.0.0',
+            'offering': this.offering,
+            'observedProperty': this.temperatureURI
         })
             .then(function (res) {
             console.log('templates are already there');
