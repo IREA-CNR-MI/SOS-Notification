@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var mqtt = require("mqtt");
 exports.MOSCA_CONFIG = {
-    server: 'mqtt.get-it.it',
+    server: process.env.MQTT_SERVER || 'mqtt.get-it.it',
     port: 1883,
     mqttOptions: {}
 };
@@ -21,6 +21,7 @@ var MqttService = (function () {
         if (config === void 0) { config = exports.MOSCA_CONFIG; }
         var _this = this;
         this.config = config;
+        console.log('Attempting connection to', "mqtt://" + config.server + ":" + config.port);
         this.client = mqtt.connect("mqtt://" + config.server + ":" + config.port, config.mqttOptions);
         this.client.on('connect', function () {
             console.log('connected to MQTT on', config.server, config.port);

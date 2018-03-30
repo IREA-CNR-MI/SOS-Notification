@@ -15,7 +15,7 @@ export interface IMqttMessage {
 }
 
 export const MOSCA_CONFIG: IConfig = {
-	server: 'mqtt.get-it.it',
+	server: process.env.MQTT_SERVER || 'mqtt.get-it.it',
 	port: 1883,
 	mqttOptions: {
 	}
@@ -41,6 +41,7 @@ export class MqttService {
 
 	constructor(config = MOSCA_CONFIG) {
 		this.config = config;
+		console.log('Attempting connection to', `mqtt://${config.server}:${config.port}`);
 		this.client = mqtt.connect(`mqtt://${config.server}:${config.port}`, config.mqttOptions)
 		this.client.on('connect', () => {
 			console.log('connected to MQTT on', config.server, config.port);

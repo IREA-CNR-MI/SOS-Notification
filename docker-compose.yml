@@ -4,12 +4,16 @@ services:
   main:
     image: sos-alerting
     restart: unless-stopped
+    env_file:
+      - ./scripts/docker/env/production/mqtt.env
     entrypoint:
       - node
       - /app/src/index.js
   logger:
     image: sos-alerting
     restart: unless-stopped
+    env_file:
+      - ./scripts/docker/env/production/mqtt.env
     entrypoint:
       - node
       - /app/src/logger.js
@@ -18,6 +22,8 @@ services:
   sos-feed:
     image: sos-alerting
     restart: unless-stopped
+    env_file:
+      - ./scripts/docker/env/production/mqtt.env
     environment:
       - SOS_URL=http://enygma.it:8098/52n-sos-webapp/service
     entrypoint:
