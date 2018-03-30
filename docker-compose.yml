@@ -27,11 +27,11 @@ services:
 #      - sos52
 #    depends_on:
 #      - sos52
-  home-feed:
-    image: sos-alerting
-    entrypoint:
-      - node
-      - /app/src/home-feed.js
+#  home-feed:
+#    image: sos-alerting
+#    entrypoint:
+#      - node
+#      - /app/src/home-feed.js
 #    depends_on:
 #      - sos52
 #  dbsos:
