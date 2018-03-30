@@ -13,6 +13,8 @@ export class TelegramBot {
         this.bot.onText(/\/subscribe/, (msg) => {
             console.log('subscribe', msg);
             this.bot.sendMessage(msg.chat.id, "Welcome to " + msg.chat.id);
+            const temp = (<any>Object).assign({}, msg.chat);
+            temp.subscribedTo = [];
             this.conversations.push(msg.chat);
             fs.writeFileSync('conversations.json', JSON.stringify(this.conversations), 'utf8');
         });
@@ -23,9 +25,15 @@ export class TelegramBot {
             fs.writeFileSync('conversations.json', JSON.stringify(this.conversations), 'utf8');
         });
 
-        this.bot.onText(/\/luci_(.+)/, (msg, match) => {
-            console.log('received luci', msg, match);
-            const resp = match[1];
+        this.bot.onText(/\/filter ([a-z]+) ([<>=]+) ([0-9]+)/, (msg, match) => {
+            console.log('received filter', msg, match);
+            const obsProp = match[1];
+            const operator = match[2];
+            const value = match[3];
+            const convo = this.getConversation(msg.chat.id);
+            if ( convo ) {
+                console.log('filtering on', msg.chat.id, obsProp, operator, value);
+            }
         });
 
         this.bot.onText(/\/status/, (msg, match) => {
@@ -60,6 +68,41 @@ export class TelegramBot {
         */
     }
 
+    getSubscribedTo(topic: string) {
+        const temp = [];
+        for ( let c of this.conversations ) {
+            for ( let s of c.subscribedTo ) {
+                if ( s.observedProperty === topic ) {
+                    if ( temp.indexOf(c) < 0 ) {
+                        temp.push(c);
+                    }
+                }
+            }
+        }
+        return temp;
+    }
+
+    saveConversations() {
+        fs.writeFileSync('conversations.json', JSON.stringify(this.conversations), 'utf8');
+    }
+
+    getConversation(id) {
+        for ( let c of this.conversations ) {
+            if ( c.id === id ) {
+                return c;
+            }
+        }
+    }
+
+    updateConversation(conversation) {
+        for ( let c of this.conversations ) {
+            if ( c.id === conversation.id ) {
+                c.subscribedTo = conversation.subscribedTo;
+            }
+        }
+        this.saveConversations();
+    }
+
     private unsubscribe(id) {
         for ( let i = 0; i < this.conversations.length; i++ ) {
             let c = this.conversations[i];
@@ -74,5 +117,9 @@ export class TelegramBot {
             // console.log('send', c);
             this.bot.sendMessage(c.id, message, {parse_mode : "HTML"});
         }
+    }
+
+    sendTo(chat, message) {
+        this.bot.sendMessage(chat, message, {parse_mode : "HTML"});
     }
 }
