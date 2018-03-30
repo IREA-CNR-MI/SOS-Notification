@@ -21,16 +21,16 @@ services:
     entrypoint:
       - node
       - /app/src/logger.js
-  sos-feed:
-    build: .
-    image: sos-alerting
-    volumes:
-      - type: bind
-        source: .
-        target: /app
-    entrypoint:
-      - node
-      - /app/src/sos-feed/index.js
+#  sos-feed:
+#    build: .
+#    image: sos-alerting
+#    volumes:
+#      - type: bind
+#        source: .
+#        target: /app
+#    entrypoint:
+#      - node
+#      - /app/src/sos-feed/index.js
 #  home-feed:
 #    build: .
 #    image: sos-alerting
