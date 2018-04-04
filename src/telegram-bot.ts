@@ -225,17 +225,23 @@ export class TelegramBot {
     saveConversations() {
     	console.log('saving conversations');
         // fs.writeFileSync('conversations.json', JSON.stringify(this.conversations), 'utf8');
+	    for ( let c of this.conversations ) {
+	    	c._id = c.id;
+	    }
 	    MongoClient.connect(DBURL, (err, client) => {
 		    if ( err ) {
 			    console.log('error connecting to mongo', err);
 		    } else {
 			    const db = client.db('sos-notification');
-			    db.collection('convos').insertMany(this.conversations)
+			    db.collection('convos').deleteMany({})
 				    .then( res => {
-					    client.close();
-				    })
-				    .catch( err => {
-					    client.close();
+					    db.collection('convos').insertMany(this.conversations)
+						    .then( res => {
+							    client.close();
+						    })
+						    .catch( err => {
+							    client.close();
+						    })
 				    })
 		    }
 	    });

@@ -210,18 +210,25 @@ var TelegramBot = /** @class */ (function () {
         var _this = this;
         console.log('saving conversations');
         // fs.writeFileSync('conversations.json', JSON.stringify(this.conversations), 'utf8');
+        for (var _i = 0, _a = this.conversations; _i < _a.length; _i++) {
+            var c = _a[_i];
+            c._id = c.id;
+        }
         MongoClient.connect(exports.DBURL, function (err, client) {
             if (err) {
                 console.log('error connecting to mongo', err);
             }
             else {
-                var db = client.db('sos-notification');
-                db.collection('convos').insertMany(_this.conversations)
+                var db_1 = client.db('sos-notification');
+                db_1.collection('convos').deleteMany({})
                     .then(function (res) {
-                    client.close();
-                })
-                    .catch(function (err) {
-                    client.close();
+                    db_1.collection('convos').insertMany(_this.conversations)
+                        .then(function (res) {
+                        client.close();
+                    })
+                        .catch(function (err) {
+                        client.close();
+                    });
                 });
             }
         });
