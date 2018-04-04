@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var mqtt_service_1 = require("./mqtt-service");
 var telegram_bot_1 = require("./telegram-bot");
-var mqttService = new mqtt_service_1.MqttService();
 var telegramBot = new telegram_bot_1.TelegramBot();
+var mqttService = new mqtt_service_1.MqttService();
 mqttService.subscribe('systems/+/component/obsProp/#', function (topic, message) {
     console.log('index received', topic, message);
     var obsProp = null;
@@ -16,6 +16,7 @@ mqttService.subscribe('systems/+/component/obsProp/#', function (topic, message)
     if (obsProp) {
         var value = parseInt(message);
         telegramBot.state[obsProp] = value;
+        console.log('setting', obsProp, value);
         var subscribed = telegramBot.getSubscribedTo(obsProp);
         for (var _i = 0, subscribed_1 = subscribed; _i < subscribed_1.length; _i++) {
             var c = subscribed_1[_i];

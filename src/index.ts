@@ -1,8 +1,8 @@
 import {MqttService} from './mqtt-service';
 import {TelegramBot} from './telegram-bot';
 
-const mqttService = new MqttService();
 const telegramBot = new TelegramBot();
+const mqttService = new MqttService();
 
 export interface ISubscriptioin {
     observedProperty: string,
@@ -22,6 +22,7 @@ mqttService.subscribe('systems/+/component/obsProp/#', (topic, message) => {
     if ( obsProp ) {
 	    const value = parseInt(message);
 	    telegramBot.state[obsProp] = value;
+	    console.log('setting', obsProp, value);
 	    const subscribed: any = telegramBot.getSubscribedTo(obsProp);
 	    for ( let c of subscribed ) {
 		    for ( let s of c.subscribedTo ) {
