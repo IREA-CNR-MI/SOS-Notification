@@ -2,8 +2,37 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var TelegramBotApi = require("node-telegram-bot-api");
 var fs = require("fs");
+var Subject_1 = require("rxjs/Subject");
+var MongoClient = require('mongodb').MongoClient;
+var assert = require('assert');
+exports.DBURL = 'mongodb://mongo:27017';
 var token = '517522188:AAHqkW_VebuqgG_aWBIGyBianTfDyaQoFDs';
 var json = require('format-json');
+var options = {
+    reply_markup: {
+        inline_keyboard: [
+            [
+                { text: 'Criteria', callback_data: 'criteria' },
+                { text: 'State', callback_data: 'state' },
+            ],
+            [
+                { text: 'Clear temperature', callback_data: 'clear_temp' },
+                { text: 'Clear humidity', callback_data: 'clear_hum' },
+                { text: 'Clear all', callback_data: 'clearall' },
+            ]
+            /*
+                    ],
+                    keyboard: [
+                        [
+                            'Criteria', '/criteria'
+                        ],
+                        [
+                            'State', '/state'
+                        ]
+            */
+        ]
+    }
+};
 var TelegramBot = /** @class */ (function () {
     function TelegramBot() {
         var _this = this;
@@ -17,8 +46,17 @@ var TelegramBot = /** @class */ (function () {
             humidity: -1,
             temperature: -1
         };
-        this.conversations = JSON.parse(fs.readFileSync('conversations.json').toString());
-        console.log('TelegramBot', this.conversations);
+        this.getConversations()
+            .subscribe(function (res) {
+            if (res) {
+                _this.conversations = res;
+            }
+            else {
+                _this.conversations = JSON.parse(fs.readFileSync('conversations.json').toString());
+                _this.saveConversations();
+            }
+            console.log('TelegramBot', _this.conversations);
+        });
         this.bot.onText(/\/start/, function (msg) {
             console.log('subscribe', msg);
             _this.bot.sendMessage(msg.chat.id, "Welcome to " + msg.chat.id);
@@ -39,7 +77,8 @@ var TelegramBot = /** @class */ (function () {
                     filter: {
                         operator: operator,
                         value: value,
-                        triggered: false
+                        triggered: false,
+                        movingAverage: false
                     }
                 });
                 console.log('convo', convo);
@@ -77,25 +116,62 @@ var TelegramBot = /** @class */ (function () {
             console.log('clear criteria about', obsProp);
             var convo = _this.getConversation(msg.chat.id);
             if (convo) {
-                for (var i = convo.subscribedTo.length - 1; i >= 0; i--) {
-                    var subscription = convo.subscribedTo[i];
-                    if (subscription && (obsProp === 'all' || subscription.observedProperty === obsProp)) {
-                        console.log('removing', subscription);
-                        convo.subscribedTo.splice(i, 1);
-                    }
-                }
-                _this.saveConversations();
-                console.log('cleared criteria about', obsProp);
+                _this.clearParameter(convo, obsProp);
                 _this.sendTo(msg.chat.id, 'Alright, mate, you\'ve got these notifications left: ' + json.plain(convo.subscribedTo));
             }
             else {
                 console.log('chat', msg.chat.id, 'not found');
             }
         });
+        this.bot.onText(/\/buttons/, function (msg, match) {
+            _this.bot.sendMessage(msg.from.id, 'Press button or enter command', options);
+        });
+        this.bot.on('callback_query', function (callbackQuery) {
+            var action = callbackQuery.data;
+            var msg = callbackQuery.message;
+            var opts = {
+                chat_id: msg.chat.id,
+                message_id: msg.message_id,
+            };
+            var text = 'Ok';
+            switch (action) {
+                case 'state':
+                    _this.sendTo(msg.chat.id, '*Current state:*' + json.plain(_this.state));
+                    break;
+                case 'criteria':
+                    _this.sendTo(msg.chat.id, '*Your notification criteria are:* ' + json.plain(_this.getConversation(msg.chat.id).subscribedTo));
+                    break;
+                case 'clear_temp':
+                    _this.clearParameter(_this.getConversation(msg.chat.id), 'temperature');
+                    _this.sendTo(msg.chat.id, '*Your notification criteria are:* ' + json.plain(_this.getConversation(msg.chat.id).subscribedTo));
+                    break;
+                case 'clear_hum':
+                    _this.clearParameter(_this.getConversation(msg.chat.id), 'humidity');
+                    _this.sendTo(msg.chat.id, '*Your notification criteria are:* `' + json.plain(_this.getConversation(msg.chat.id).subscribedTo) + '`');
+                    break;
+                case 'clearall':
+                    _this.clearParameter(_this.getConversation(msg.chat.id), 'all');
+                    _this.sendTo(msg.chat.id, '*Your notification criteria are:* ' + json.plain(_this.getConversation(msg.chat.id).subscribedTo));
+                    break;
+            }
+            _this.bot.editMessageText(text, opts);
+            _this.bot.sendMessage(msg.chat.id, 'Press button or enter command', options);
+        });
         this.bot.on('polling_error', function (error) {
             console.log('polling error', error); // => 'EFATAL'
         });
     }
+    TelegramBot.prototype.clearParameter = function (convo, obsProp) {
+        for (var i = convo.subscribedTo.length - 1; i >= 0; i--) {
+            var subscription = convo.subscribedTo[i];
+            if (subscription && (obsProp === 'all' || subscription.observedProperty === obsProp)) {
+                console.log('removing', subscription);
+                convo.subscribedTo.splice(i, 1);
+            }
+        }
+        this.saveConversations();
+        console.log('cleared criteria about', obsProp);
+    };
     TelegramBot.prototype.getSubscribedTo = function (topic) {
         var temp = [];
         for (var _i = 0, _a = this.conversations; _i < _a.length; _i++) {
@@ -111,9 +187,44 @@ var TelegramBot = /** @class */ (function () {
         }
         return temp;
     };
+    TelegramBot.prototype.getConversations = function () {
+        var results = new Subject_1.Subject();
+        MongoClient.connect(exports.DBURL, function (err, client) {
+            if (err) {
+                console.log('error connecting to mongo', err);
+            }
+            else {
+                var db = client.db('sos-notification');
+                db.collection('convos').find({}, {}, function (res) {
+                    results.next(res);
+                    client.close();
+                }, function (err) {
+                    results.error(err);
+                    client.close();
+                });
+            }
+        });
+        return results;
+    };
     TelegramBot.prototype.saveConversations = function () {
+        var _this = this;
         console.log('saving conversations');
-        fs.writeFileSync('conversations.json', JSON.stringify(this.conversations), 'utf8');
+        // fs.writeFileSync('conversations.json', JSON.stringify(this.conversations), 'utf8');
+        MongoClient.connect(exports.DBURL, function (err, client) {
+            if (err) {
+                console.log('error connecting to mongo', err);
+            }
+            else {
+                var db = client.db('sos-notification');
+                db.collection('convos').insertMany(_this.conversations)
+                    .then(function (res) {
+                    client.close();
+                })
+                    .catch(function (err) {
+                    client.close();
+                });
+            }
+        });
     };
     TelegramBot.prototype.getConversation = function (id) {
         for (var _i = 0, _a = this.conversations; _i < _a.length; _i++) {
@@ -149,6 +260,7 @@ var TelegramBot = /** @class */ (function () {
     };
     TelegramBot.prototype.sendTo = function (chat, message) {
         this.bot.sendMessage(chat, message, { parse_mode: "markdown" });
+        this.bot.sendMessage(chat, 'Press button or enter command', options);
     };
     return TelegramBot;
 }());

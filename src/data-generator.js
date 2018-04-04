@@ -13,7 +13,7 @@ var parameters = [
         max: 12
     }
 ];
-var DataGenerator = (function () {
+var DataGenerator = /** @class */ (function () {
     function DataGenerator() {
         var _this = this;
         this.mqttService = new mqtt_service_1.MqttService();

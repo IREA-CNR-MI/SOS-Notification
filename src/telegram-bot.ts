@@ -1,8 +1,39 @@
 import * as TelegramBotApi from 'node-telegram-bot-api';
 import * as fs from 'fs';
+import {Subject} from 'rxjs/Subject';
+
+var MongoClient = require('mongodb').MongoClient;
+var assert = require('assert');
+
+export const DBURL = 'mongodb://mongo:27017';
 
 const token = '517522188:AAHqkW_VebuqgG_aWBIGyBianTfDyaQoFDs';
 const json = require('format-json');
+const options = {
+	reply_markup: {
+		inline_keyboard: [
+			[
+				{ text: 'Criteria', callback_data: 'criteria' },
+				{ text: 'State', callback_data: 'state' },
+			],
+			[
+				{ text: 'Clear temperature', callback_data: 'clear_temp' },
+				{ text: 'Clear humidity', callback_data: 'clear_hum' },
+				{ text: 'Clear all', callback_data: 'clearall' },
+			]
+/*
+		],
+		keyboard: [
+			[
+				'Criteria', '/criteria'
+			],
+			[
+				'State', '/state'
+			]
+*/
+		]
+	}
+};
 
 export class TelegramBot {
     bot = new TelegramBotApi(token, {polling: true});
@@ -17,8 +48,17 @@ export class TelegramBot {
     }
 
     constructor() {
-        this.conversations = JSON.parse(fs.readFileSync('conversations.json').toString());
-        console.log('TelegramBot', this.conversations);
+    	this.getConversations()
+		    .subscribe( (res: any) => {
+		    	if ( res ) {
+		    		this.conversations = res;
+			    } else {
+				    this.conversations = JSON.parse(fs.readFileSync('conversations.json').toString());
+				    this.saveConversations();
+			    }
+			    console.log('TelegramBot', this.conversations);
+		    })
+
         this.bot.onText(/\/start/, (msg) => {
             console.log('subscribe', msg);
             this.bot.sendMessage(msg.chat.id, "Welcome to " + msg.chat.id);
@@ -40,7 +80,8 @@ export class TelegramBot {
 		            filter: {
 			            operator: operator,
 			            value: value,
-			            triggered: false
+			            triggered: false,
+			            movingAverage: false
 		            }
 	            });
 	            console.log('convo', convo);
@@ -82,25 +123,70 @@ export class TelegramBot {
             console.log('clear criteria about', obsProp);
 	        const convo = this.getConversation(msg.chat.id);
 	        if ( convo ) {
-	        	for ( let i = convo.subscribedTo.length - 1; i >= 0; i-- ) {
-	        		const subscription = convo.subscribedTo[i];
-	        		if ( subscription && (obsProp === 'all' || subscription.observedProperty === obsProp) ) {
-	        			console.log('removing', subscription);
-	        			convo.subscribedTo.splice(i, 1);
-			        }
-		        }
-	        	this.saveConversations();
-		        console.log('cleared criteria about', obsProp);
+	        	this.clearParameter(convo, obsProp);
 		        this.sendTo(msg.chat.id, 'Alright, mate, you\'ve got these notifications left: ' + json.plain(convo.subscribedTo));
 	        } else {
 	        	console.log('chat', msg.chat.id, 'not found');
 	        }
         });
 
+        this.bot.onText(/\/buttons/, (msg, match) => {
+	        this.bot.sendMessage(msg.from.id, 'Press button or enter command', options);
+        });
+
+	    this.bot.on('callback_query', (callbackQuery) => {
+		    const action = callbackQuery.data;
+		    const msg = callbackQuery.message;
+		    const opts = {
+			    chat_id: msg.chat.id,
+			    message_id: msg.message_id,
+		    };
+		    let text = 'Ok';
+
+		    switch (action) {
+			    case 'state':
+				    this.sendTo(msg.chat.id, '*Current state:*' + json.plain(this.state));
+					break;
+			    case 'criteria':
+				    this.sendTo(msg.chat.id, '*Your notification criteria are:* ' + json.plain(this.getConversation(msg.chat.id).subscribedTo));
+					break;
+			    case 'clear_temp':
+			    	this.clearParameter(this.getConversation(msg.chat.id), 'temperature');
+				    this.sendTo(msg.chat.id, '*Your notification criteria are:* ' + json.plain(this.getConversation(msg.chat.id).subscribedTo));
+					break;
+			    case 'clear_hum':
+				    this.clearParameter(this.getConversation(msg.chat.id), 'humidity');
+				    this.sendTo(msg.chat.id, '*Your notification criteria are:* `' + json.plain(this.getConversation(msg.chat.id).subscribedTo) + '`');
+					break;
+			    case 'clearall':
+				    this.clearParameter(this.getConversation(msg.chat.id), 'all');
+				    this.sendTo(msg.chat.id, '*Your notification criteria are:* ' + json.plain(this.getConversation(msg.chat.id).subscribedTo));
+					break;
+
+				    // text = 'Edited Text';
+		    }
+
+		    this.bot.editMessageText(text, opts);
+		    this.bot.sendMessage(msg.chat.id, 'Press button or enter command', options);
+
+	    });
+
 	    this.bot.on('polling_error', (error) => {
 		    console.log('polling error', error);  // => 'EFATAL'
 	    });
 
+    }
+
+    clearParameter(convo, obsProp) {
+	    for ( let i = convo.subscribedTo.length - 1; i >= 0; i-- ) {
+		    const subscription = convo.subscribedTo[i];
+		    if ( subscription && (obsProp === 'all' || subscription.observedProperty === obsProp) ) {
+			    console.log('removing', subscription);
+			    convo.subscribedTo.splice(i, 1);
+		    }
+	    }
+	    this.saveConversations();
+	    console.log('cleared criteria about', obsProp);
     }
 
     getSubscribedTo(topic: string) {
@@ -117,9 +203,42 @@ export class TelegramBot {
         return temp;
     }
 
+    getConversations() {
+    	const results = new Subject();
+	    MongoClient.connect(DBURL, (err, client) => {
+		    if ( err ) {
+			    console.log('error connecting to mongo', err);
+		    } else {
+			    const db = client.db('sos-notification');
+			    db.collection('convos').find({
+			    }, {}, res => {
+				    	results.next(res);
+					    client.close();
+				    }, err => {
+				    	results.error(err);
+					    client.close();
+				    })
+		    }
+	    });
+	    return results;
+    }
     saveConversations() {
     	console.log('saving conversations');
-        fs.writeFileSync('conversations.json', JSON.stringify(this.conversations), 'utf8');
+        // fs.writeFileSync('conversations.json', JSON.stringify(this.conversations), 'utf8');
+	    MongoClient.connect(DBURL, (err, client) => {
+		    if ( err ) {
+			    console.log('error connecting to mongo', err);
+		    } else {
+			    const db = client.db('sos-notification');
+			    db.collection('convos').insertMany(this.conversations)
+				    .then( res => {
+					    client.close();
+				    })
+				    .catch( err => {
+					    client.close();
+				    })
+		    }
+	    });
     }
 
     getConversation(id) {
@@ -157,5 +276,6 @@ export class TelegramBot {
 
     sendTo(chat, message) {
         this.bot.sendMessage(chat, message, {parse_mode : "markdown"});
+	    this.bot.sendMessage(chat, 'Press button or enter command', options);
     }
 }

@@ -1,1 +1,26 @@
-[{"id":301740028,"first_name":"Fabio","last_name":"Pavesi","type":"private","subscribedTo":[{"observedProperty":"temperature","filter":{"operator":">","value":"20","triggered":false}}]},{"id":271052488,"first_name":"Alessandro","last_name":"Oggioni","username":"OggioniAle","type":"private","subscribedTo":[]}]
+[
+  {
+    "id": 301740028,
+    "first_name": "Fabio",
+    "last_name": "Pavesi",
+    "type": "private",
+    "subscribedTo": [
+      {
+        "observedProperty": "temperature",
+        "filter": {
+          "operator": ">",
+          "value": "20",
+          "triggered": false
+        }
+      }
+    ]
+  },
+  {
+    "id": 271052488,
+    "first_name": "Alessandro",
+    "last_name": "Oggioni",
+    "username": "OggioniAle",
+    "type": "private",
+    "subscribedTo": []
+  }
+]
