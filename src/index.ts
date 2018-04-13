@@ -44,7 +44,7 @@ mqttService.subscribe('systems/+/component/obsProp/#', (topic, message) => {
 			    }
 			    if ( condition ) {
 				    if ( !s.filter.triggered ) {
-					    telegramBot.sendTo(c.id, `${obsProp} ${s.filter.operator} ${s.filter.value}`);
+					    telegramBot.sendTo(c.id, `${obsProp} ${s.filter.operator} ${s.filter.value} (current value: ${value})`);
 					    s.filter.triggered = true;
 				    }
 			    } else {
