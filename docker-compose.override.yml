@@ -9,7 +9,7 @@ services:
         source: .
         target: /app
     entrypoint:
-      - node
+      - nodemon
       - /app/src/index.js
   logger:
     build: .
@@ -19,7 +19,7 @@ services:
         source: .
         target: /app
     entrypoint:
-      - node
+      - nodemon
       - /app/src/logger.js
 #  sos-feed:
 #    build: .

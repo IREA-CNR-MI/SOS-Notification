@@ -1,0 +1,63 @@
+{
+  "request": "InsertResultTemplate",
+  "service": "SOS",
+  "version": "2.0.0",
+  "identifier": "http://www.get-it.it/sensors/mqtt.get-it.it/procedure/DavisInstruments/VantagePro/noSerialNumberDeclared/20141217115413720_11525/template/observedProperty/air_temperature/foi/SSF/SP/4326/45.3138/12.5088",
+  "offering": "offering:http://www.get-it.it/sensors/demo1.get-it.it/procedure/DavisInstruments/VantagePro/noSerialNumberDeclared/20141217115413720_11525/observations",
+  "observationTemplate": {
+    "type": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+    "procedure": "http://www.get-it.it/sensors/demo1.get-it.it/procedure/DavisInstruments/VantagePro/noSerialNumberDeclared/20141217115413720_11525",
+    "observedProperty": "http://vocabs.lter-europe.net/EnvThes/USLterCV_22",
+    "featureOfInterest": {
+      "identifier": {
+        "value": "http://www.get-it.it/sensors/foi/SSF/SP/4326/45.3138/12.5088",
+        "codespace": "http://www.opengis.net/def/nil/OGC/0/unknown"
+      },
+      "name": [
+        {
+          "value": "Adriatic Sea",
+          "codespace": "http://www.opengis.net/def/nil/OGC/0/unknown"
+        }
+      ],
+      "sampledFeature": [
+        "http://getit.lteritalia.it/layers/geonode:lter_eu_it_057"
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          45.3138,
+          12.5088
+        ],
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:4326"
+          }
+        }
+      }
+    },
+    "phenomenonTime": "template",
+    "resultTime": "template",
+    "result": ""
+  },
+  "resultStructure": {
+    "fields": [
+      {
+        "type": "time",
+        "name": "phenomenonTime",
+        "definition": "http://www.opengis.net/def/property/OGC/0/PhenomenonTime",
+        "uom": "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+      },
+      {
+        "type": "quantity",
+        "name": "air_temperature",
+        "definition": "http://vocabs.lter-europe.net/EnvThes/USLterCV_22",
+        "uom": "°C"
+      }
+    ]
+  },
+  "resultEncoding": {
+    "tokenSeparator": ",",
+    "blockSeparator": "#"
+  }
+}

@@ -25,10 +25,15 @@ services:
     env_file:
       - ./scripts/docker/env/production/mqtt.env
     environment:
-      - SOS_URL=http://enygma.it:8098/52n-sos-webapp/service
+      - SOS_URL=http://mqtt.get-it.it/52n-sos-webapp/service
     entrypoint:
       - node
       - /app/src/sos-feed/index.js
+  redis:
+    image: redis:alpine
+    ports:
+      - 1883:1883
+
 #    links:
 #      - sos52
 #    depends_on:

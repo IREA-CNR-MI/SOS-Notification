@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var TelegramBotApi = require("node-telegram-bot-api");
 var fs = require("fs");
 var Subject_1 = require("rxjs/Subject");
+var index_1 = require("./index");
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 exports.DBURL = 'mongodb://mongo:27017';
@@ -14,10 +15,13 @@ var options = {
             [
                 { text: 'Criteria', callback_data: 'criteria' },
                 { text: 'State', callback_data: 'state' },
+                { text: 'Properties', callback_data: 'properties' },
             ],
             [
-                { text: 'Clear temperature', callback_data: 'clear_temp' },
-                { text: 'Clear humidity', callback_data: 'clear_hum' },
+                /*
+                                {text: 'Clear temperature', callback_data: 'clear_temp'},
+                                {text: 'Clear humidity', callback_data: 'clear_hum'},
+                */
                 { text: 'Clear all', callback_data: 'clearall' },
             ]
             /*
@@ -38,10 +42,7 @@ var TelegramBot = /** @class */ (function () {
         var _this = this;
         this.bot = new TelegramBotApi(token, { polling: true });
         this.conversations = [];
-        this.availableProperties = [
-            'temperature',
-            'humidity'
-        ];
+        this.availableProperties = [];
         this.state = {
             humidity: -1,
             temperature: -1
@@ -57,21 +58,29 @@ var TelegramBot = /** @class */ (function () {
             }
             console.log('TelegramBot', _this.conversations);
         });
+        this.getAvailableProperties()
+            .subscribe(function (res) {
+            console.log('found properties', res);
+            _this.availableProperties = res;
+        });
         this.bot.onText(/\/start/, function (msg) {
             console.log('subscribe', msg);
-            _this.bot.sendMessage(msg.chat.id, "Welcome to " + msg.chat.id);
+            _this.bot.sendMessage(msg.chat.id, 'Welcome to ' + msg.chat.id);
             var temp = Object.assign({}, msg.chat);
             temp.subscribedTo = [];
             _this.conversations.push(msg.chat);
-            fs.writeFileSync('conversations.json', JSON.stringify(_this.conversations), 'utf8');
+            _this.saveConversations();
         });
-        this.bot.onText(/\/notify ([a-z]+) ([<>=]+) ([0-9]+)/, function (msg, match) {
+        this.bot.onText(/\/notify ([^\s]+) ([<>=]+) ([0-9]+)/, function (msg, match) {
             console.log('received filter', msg, match);
             var obsProp = match[1];
             var operator = match[2];
             var value = match[3];
             var convo = _this.getConversation(msg.chat.id);
             if (convo) {
+                if (!convo.subscribedTo) {
+                    convo.subscribedTo = [];
+                }
                 convo.subscribedTo.push({
                     observedProperty: obsProp,
                     filter: {
@@ -89,16 +98,25 @@ var TelegramBot = /** @class */ (function () {
         });
         this.bot.onText(/\/state/, function (msg, match) {
             console.log('status request');
-            _this.sendTo(msg.chat.id, '*Current state:*' + json.plain(_this.state));
+            _this.sendTo(msg.chat.id, '*Current state:*' + JSON.stringify(index_1.stateManager.states, null, 4));
         });
         this.bot.onText(/\/properties/, function (msg, match) {
             console.log('properties');
-            _this.sendTo(msg.chat.id, '*Available properties:*' + json.plain(_this.availableProperties));
+            _this.getAvailableProperties()
+                .subscribe(function (res) {
+                var message = '';
+                for (var _i = 0, res_1 = res; _i < res_1.length; _i++) {
+                    var p = res_1[_i];
+                    message += ' *' + p.source + '*  ' + p.property.replace(/\_/, '\\_') + ' \n';
+                }
+                console.log('messaggio', message);
+                _this.sendTo(msg.chat.id, 'Available properties: \n - - - \n' + message);
+            });
             // client.publish('casa/soggiorno/luci', 'manual');
         });
         this.bot.onText(/\/criteria/, function (msg, match) {
             console.log('criteria');
-            _this.sendTo(msg.chat.id, '*Your notification criteria are:* ' + json.plain(_this.getConversation(msg.chat.id).subscribedTo));
+            _this.sendTo(msg.chat.id, '*Your notification criteria are:* ' + JSON.stringify(_this.getConversation(msg.chat.id).subscribedTo, null, 4));
         });
         /*
                 this.bot.onText(/\/clear/, (msg, match) => {
@@ -136,7 +154,7 @@ var TelegramBot = /** @class */ (function () {
             var text = 'Ok';
             switch (action) {
                 case 'state':
-                    _this.sendTo(msg.chat.id, '*Current state:*' + json.plain(_this.state));
+                    _this.sendTo(msg.chat.id, '*Current state:*' + JSON.stringify(index_1.stateManager.states, null, 4));
                     break;
                 case 'criteria':
                     _this.sendTo(msg.chat.id, '*Your notification criteria are:* ' + json.plain(_this.getConversation(msg.chat.id).subscribedTo));
@@ -152,6 +170,18 @@ var TelegramBot = /** @class */ (function () {
                 case 'clearall':
                     _this.clearParameter(_this.getConversation(msg.chat.id), 'all');
                     _this.sendTo(msg.chat.id, '*Your notification criteria are:* ' + json.plain(_this.getConversation(msg.chat.id).subscribedTo));
+                    break;
+                case 'properties':
+                    _this.getAvailableProperties()
+                        .subscribe(function (res) {
+                        var message = '';
+                        for (var _i = 0, res_2 = res; _i < res_2.length; _i++) {
+                            var p = res_2[_i];
+                            message += ' *' + p.source + '*  ' + p.property.replace(/\_/, '\\_') + ' \n';
+                        }
+                        console.log('messaggio', message);
+                        _this.sendTo(msg.chat.id, 'Available properties: \n - - - \n' + message);
+                    });
                     break;
             }
             _this.bot.editMessageText(text, opts);
@@ -176,11 +206,13 @@ var TelegramBot = /** @class */ (function () {
         var temp = [];
         for (var _i = 0, _a = this.conversations; _i < _a.length; _i++) {
             var c = _a[_i];
-            for (var _b = 0, _c = c.subscribedTo; _b < _c.length; _b++) {
-                var s = _c[_b];
-                if (s.observedProperty === topic) {
-                    if (temp.indexOf(c) < 0) {
-                        temp.push(c);
+            if (c.hasOwnProperty('subscribedTo')) {
+                for (var _b = 0, _c = c.subscribedTo; _b < _c.length; _b++) {
+                    var s = _c[_b];
+                    if (s.observedProperty === topic) {
+                        if (temp.indexOf(c) < 0) {
+                            temp.push(c);
+                        }
                     }
                 }
             }
@@ -195,12 +227,14 @@ var TelegramBot = /** @class */ (function () {
             }
             else {
                 var db = client.db('sos-notification');
-                db.collection('convos').find({}, {}, function (res) {
-                    results.next(res);
-                    client.close();
-                }, function (err) {
-                    results.error(err);
-                    client.close();
+                db.collection('convos').find({}).toArray(function (err, res) {
+                    if (err) {
+                        results.error(err);
+                    }
+                    else {
+                        results.next(res);
+                        client.close();
+                    }
                 });
             }
         });
@@ -262,12 +296,33 @@ var TelegramBot = /** @class */ (function () {
         for (var _i = 0, _a = this.conversations; _i < _a.length; _i++) {
             var c = _a[_i];
             // console.log('send', c);
-            this.bot.sendMessage(c.id, message, { parse_mode: "markdown" });
+            this.bot.sendMessage(c.id, message, { parse_mode: 'markdown' });
         }
     };
     TelegramBot.prototype.sendTo = function (chat, message) {
-        this.bot.sendMessage(chat, message, { parse_mode: "markdown" });
+        this.bot.sendMessage(chat, message, { parse_mode: 'markdown' });
         this.bot.sendMessage(chat, 'Press button or enter command', options);
+    };
+    TelegramBot.prototype.getAvailableProperties = function () {
+        var results = new Subject_1.Subject();
+        MongoClient.connect(exports.DBURL, function (err, client) {
+            if (err) {
+                console.log('error connecting to mongo', err);
+            }
+            else {
+                var db = client.db('sos-notification');
+                db.collection('properties').find({}).sort({ source: 1, property: 1 }).toArray(function (err, res) {
+                    if (err) {
+                        results.error(err);
+                    }
+                    else {
+                        results.next(res);
+                    }
+                    client.close();
+                });
+            }
+        });
+        return results;
     };
     return TelegramBot;
 }());
